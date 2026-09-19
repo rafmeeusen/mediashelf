@@ -6,28 +6,28 @@
       hx-trigger="input changed delay:300ms, change delay:100ms"
       hx-sync="this:replace"
       hx-indicator="#spinner">
-  <input type="search" name="q" placeholder="Search title or creator..." autocomplete="off" aria-label="Search">
+  <input type="search" name="q" placeholder="Zoek op titel of maker..." autocomplete="off" aria-label="Zoeken">
   <div class="filter-row">
     <select name="content_type" aria-label="Type">
-      <option value="">All types</option>
-      <option value="movie">Movies</option>
-      <option value="book">Books</option>
-      <option value="tv">TV</option>
+      <option value="">Alle types</option>
+      <option value="movie">Films</option>
+      <option value="book">Boeken</option>
+      <option value="tv">Series</option>
       <option value="podcast">Podcasts</option>
     </select>
     <select name="status" aria-label="Status">
-      <option value="">Any status</option>
-      <option value="to_consume">To consume</option>
-      <option value="done">Done</option>
+      <option value="">Elke status</option>
+      <option value="to_consume">Te doen</option>
+      <option value="done">Gedaan</option>
     </select>
     <select name="genre" aria-label="Genre">
-      <option value="">Any genre</option>
+      <option value="">Elk genre</option>
       {% for g in genres %}
       <option value="{{ g.name }}">{{ g.name }}</option>
       {% endfor %}
     </select>
   </div>
-  <span id="spinner" class="spinner htmx-indicator">Searching&hellip;</span>
+  <span id="spinner" class="spinner htmx-indicator">Bezig met zoeken&hellip;</span>
 </form>
 <div id="item-list">
   {% include "_item_list.html" %}

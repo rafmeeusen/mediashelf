@@ -141,9 +141,12 @@ def normalize(raw: dict, warnings: list[str]) -> dict:
     rating_raw = raw.get("rating")
     if rating_raw:
         try:
-            rating = int(rating_raw)
+            rating = float(rating_raw)
             if not (1 <= rating <= 10):
                 warnings.append(f"rating out of range 1-10: {rating}")
+                rating = None
+            elif (rating * 2) != int(rating * 2):
+                warnings.append(f"rating must be a half-point value (e.g. 7 or 7.5): {rating}")
                 rating = None
         except ValueError:
             warnings.append(f"unparseable rating: {rating_raw!r}")

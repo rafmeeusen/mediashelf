@@ -11,6 +11,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Integer,
+    Numeric,
     String,
     Table,
     Text,
@@ -98,7 +99,7 @@ class Item(Base):
         default=Status.to_consume,
         server_default="to_consume",
     )
-    rating: Mapped[int | None] = mapped_column(Integer)
+    rating: Mapped[float | None] = mapped_column(Numeric(3, 1, asdecimal=False))
     notes: Mapped[str | None] = mapped_column(Text)
     source: Mapped[str | None] = mapped_column(String(500))
     completed_date: Mapped[date | None] = mapped_column(Date)
@@ -117,7 +118,10 @@ class Item(Base):
 
     __table_args__ = (
         Index("ix_items_status", "status"),
-        CheckConstraint("rating IS NULL OR (rating BETWEEN 1 AND 10)", name="ck_items_rating_range"),
+        CheckConstraint(
+            "rating IS NULL OR (rating BETWEEN 1 AND 10 AND rating * 2 = TRUNC(rating * 2))",
+            name="ck_items_rating_range",
+        ),
     )
 
 

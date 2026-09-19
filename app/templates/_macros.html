@@ -1,0 +1,7 @@
+{% macro content_type_label(value) -%}
+  {{- {"movie": "Film", "book": "Boek", "tv": "Serie", "podcast": "Podcast"}[value] -}}
+{%- endmacro %}
+
+{% macro status_label(value) -%}
+  {{- "Gedaan" if value == "done" else "Te doen" -}}
+{%- endmacro %}

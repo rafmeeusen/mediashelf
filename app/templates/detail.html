@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% import "_macros.html" as m %}
 {% block title %}{{ item.title }} · MediaShelf{% endblock %}
 {% block content %}
-<a href="/" class="back-link">&larr; Back to shelf</a>
+<a href="/" class="back-link">&larr; Terug naar overzicht</a>
 
 <article class="detail">
   <div class="detail-header">
     {% if item.cover_url %}<img class="cover" src="{{ item.cover_url }}" alt="">{% endif %}
     <div>
-      <span class="item-type">{{ item.content_type.value }}</span>
+      <span class="item-type">{{ m.content_type_label(item.content_type.value) }}</span>
       <h2>{{ item.title }}</h2>
       {% if item.creator %}<p class="item-creator">{{ item.creator }}</p>{% endif %}
       {% if item.genres %}
@@ -21,7 +22,7 @@
   {% if item.description %}<p class="description">{{ item.description }}</p>{% endif %}
 
   <dl class="fields">
-    {% if item.release_year %}<dt>Release year</dt><dd>{{ item.release_year }}</dd>{% endif %}
+    {% if item.release_year %}<dt>Jaar</dt><dd>{{ item.release_year }}</dd>{% endif %}
     {% for field in ["status", "rating", "language_id", "source", "completed_date"] %}
       {% include "_field_row.html" %}
     {% endfor %}
@@ -46,7 +47,7 @@
       <li>
         <span>{{ link.platform.name }}</span>
         <span class="badge {{ 'badge-done' if link.available else 'badge-unavailable' }}">
-          {{ "available" if link.available else "not available" }}
+          {{ "beschikbaar" if link.available else "niet beschikbaar" }}
         </span>
       </li>
       {% endfor %}
@@ -55,8 +56,8 @@
   {% endif %}
 
   <p class="timestamps">
-    Added {{ item.created_at.strftime("%Y-%m-%d") }} &middot;
-    updated {{ item.updated_at.strftime("%Y-%m-%d") }}
+    Toegevoegd op {{ item.created_at.strftime("%Y-%m-%d") }} &middot;
+    bijgewerkt op {{ item.updated_at.strftime("%Y-%m-%d") }}
   </p>
 </article>
 {% endblock %}

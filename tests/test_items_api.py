@@ -37,6 +37,23 @@ def test_rating_out_of_range_rejected(client):
     assert resp.status_code == 422
 
 
+def test_rating_accepts_half_point_values(client):
+    resp = client.post(
+        "/items",
+        json={"content_type": "movie", "title": "Broken circle breakdown", "rating": 5.5},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["rating"] == 5.5
+
+
+def test_rating_rejects_non_half_point_values(client):
+    resp = client.post(
+        "/items",
+        json={"content_type": "movie", "title": "Bad rating", "rating": 7.3},
+    )
+    assert resp.status_code == 422
+
+
 def test_patch_marks_item_done_with_rating_and_notes(client):
     item = client.post("/items", json={"content_type": "movie", "title": "The Quiet Girl"}).json()
 

@@ -76,7 +76,7 @@ class ItemBase(BaseModel):
 
 class ItemCreate(ItemBase):
     status: Status = Status.to_consume
-    rating: int | None = Field(default=None, ge=1, le=10)
+    rating: float | None = Field(default=None, ge=1, le=10, multiple_of=0.5)
     completed_date: date | None = None
 
 
@@ -103,7 +103,7 @@ class ItemUpdate(BaseModel):
     cover_url: str | None = None
     language_id: int | None = None
     status: Status | None = None
-    rating: int | None = Field(default=None, ge=1, le=10)
+    rating: float | None = Field(default=None, ge=1, le=10, multiple_of=0.5)
     notes: str | None = None
     source: str | None = None
     completed_date: date | None = None
@@ -125,7 +125,7 @@ class ItemOut(BaseModel):
     external_metadata: dict | None
     language: LanguageOut | None
     status: Status
-    rating: int | None
+    rating: float | None
     notes: str | None
     source: str | None
     completed_date: date | None

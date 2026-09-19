@@ -1,5 +1,5 @@
 {% set mode = mode | default("view") %}
-{% set labels = {"status": "Status", "rating": "Rating", "language_id": "Language", "source": "Source", "completed_date": "Completed"} %}
+{% set labels = {"status": "Status", "rating": "Score", "language_id": "Taal", "source": "Bron", "completed_date": "Voltooid op"} %}
 <div class="field-row" id="field-{{ field }}">
   <dt>{{ labels[field] }}</dt>
   {% if mode == "edit" %}
@@ -9,8 +9,8 @@
           hx-target="#field-{{ field }}" hx-swap="outerHTML">
       {% if field == "status" %}
         <select name="value">
-          <option value="to_consume" {% if item.status.value == "to_consume" %}selected{% endif %}>To consume</option>
-          <option value="done" {% if item.status.value == "done" %}selected{% endif %}>Done</option>
+          <option value="to_consume" {% if item.status.value == "to_consume" %}selected{% endif %}>Te doen</option>
+          <option value="done" {% if item.status.value == "done" %}selected{% endif %}>Gedaan</option>
         </select>
       {% elif field == "language_id" %}
         <select name="value">
@@ -20,17 +20,28 @@
           {% endfor %}
         </select>
       {% elif field == "rating" %}
-        <input type="number" name="value" min="1" max="10" value="{{ item.rating or '' }}">
+        {# A free-typed number input is unreliable here: on Dutch-locale
+           browsers, type="number" with step="0.5" often expects a comma
+           decimal separator ("8,5") while the submitted value must use a
+           period, silently rejecting valid input. A fixed dropdown of the
+           19 valid half-point values sidesteps that entirely. #}
+        <select name="value">
+          <option value="">&mdash;</option>
+          {% for i in range(2, 21) %}
+            {% set v = i / 2 %}
+            <option value="{{ v }}" {% if item.rating and item.rating == v %}selected{% endif %}>{{ v }}</option>
+          {% endfor %}
+        </select>
       {% elif field == "completed_date" %}
         <input type="date" name="value" value="{{ item.completed_date.isoformat() if item.completed_date else '' }}">
       {% elif field == "source" %}
         <input type="text" name="value" value="{{ item.source or '' }}">
       {% endif %}
       <div class="field-actions">
-        <button type="submit" class="btn-save">Save</button>
+        <button type="submit" class="btn-save">Opslaan</button>
         <button type="button" class="btn-cancel"
                 hx-get="/ui/items/{{ item.id }}/fields/{{ field }}"
-                hx-target="#field-{{ field }}" hx-swap="outerHTML">Cancel</button>
+                hx-target="#field-{{ field }}" hx-swap="outerHTML">Annuleren</button>
       </div>
     </form>
   </dd>
@@ -38,7 +49,7 @@
   <dd>
     <span class="field-value">
       {% if field == "status" %}
-        <span class="badge badge-{{ item.status.value }}">{{ "Done" if item.status.value == "done" else "To consume" }}</span>
+        <span class="badge badge-{{ item.status.value }}">{{ "Gedaan" if item.status.value == "done" else "Te doen" }}</span>
       {% elif field == "language_id" %}
         {{ item.language.name if item.language else "—" }}
       {% elif field == "rating" %}
@@ -51,7 +62,7 @@
     </span>
     <button type="button" class="edit-btn"
             hx-get="/ui/items/{{ item.id }}/fields/{{ field }}/edit"
-            hx-target="#field-{{ field }}" hx-swap="outerHTML">Edit</button>
+            hx-target="#field-{{ field }}" hx-swap="outerHTML">Bewerken</button>
   </dd>
   {% endif %}
 </div>

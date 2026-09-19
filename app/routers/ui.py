@@ -85,7 +85,9 @@ def _parse_field_value(field: str, raw: str):
     raw = (raw or "").strip()
     if field == "status":
         return Status(raw)
-    if field in ("rating", "language_id"):
+    if field == "rating":
+        return float(raw) if raw else None
+    if field == "language_id":
         return int(raw) if raw else None
     if field == "completed_date":
         return date.fromisoformat(raw) if raw else None
