@@ -1,0 +1,57 @@
+{% set mode = mode | default("view") %}
+{% set labels = {"status": "Status", "rating": "Rating", "language_id": "Language", "source": "Source", "completed_date": "Completed"} %}
+<div class="field-row" id="field-{{ field }}">
+  <dt>{{ labels[field] }}</dt>
+  {% if mode == "edit" %}
+  <dd>
+    <form class="field-form"
+          hx-post="/ui/items/{{ item.id }}/fields/{{ field }}"
+          hx-target="#field-{{ field }}" hx-swap="outerHTML">
+      {% if field == "status" %}
+        <select name="value">
+          <option value="to_consume" {% if item.status.value == "to_consume" %}selected{% endif %}>To consume</option>
+          <option value="done" {% if item.status.value == "done" %}selected{% endif %}>Done</option>
+        </select>
+      {% elif field == "language_id" %}
+        <select name="value">
+          <option value="">&mdash;</option>
+          {% for lang in languages %}
+          <option value="{{ lang.id }}" {% if item.language and item.language.id == lang.id %}selected{% endif %}>{{ lang.name }}</option>
+          {% endfor %}
+        </select>
+      {% elif field == "rating" %}
+        <input type="number" name="value" min="1" max="10" value="{{ item.rating or '' }}">
+      {% elif field == "completed_date" %}
+        <input type="date" name="value" value="{{ item.completed_date.isoformat() if item.completed_date else '' }}">
+      {% elif field == "source" %}
+        <input type="text" name="value" value="{{ item.source or '' }}">
+      {% endif %}
+      <div class="field-actions">
+        <button type="submit" class="btn-save">Save</button>
+        <button type="button" class="btn-cancel"
+                hx-get="/ui/items/{{ item.id }}/fields/{{ field }}"
+                hx-target="#field-{{ field }}" hx-swap="outerHTML">Cancel</button>
+      </div>
+    </form>
+  </dd>
+  {% else %}
+  <dd>
+    <span class="field-value">
+      {% if field == "status" %}
+        <span class="badge badge-{{ item.status.value }}">{{ "Done" if item.status.value == "done" else "To consume" }}</span>
+      {% elif field == "language_id" %}
+        {{ item.language.name if item.language else "—" }}
+      {% elif field == "rating" %}
+        {{ (item.rating|string + "/10") if item.rating else "—" }}
+      {% elif field == "completed_date" %}
+        {{ item.completed_date.strftime("%Y-%m-%d") if item.completed_date else "—" }}
+      {% elif field == "source" %}
+        {{ item.source or "—" }}
+      {% endif %}
+    </span>
+    <button type="button" class="edit-btn"
+            hx-get="/ui/items/{{ item.id }}/fields/{{ field }}/edit"
+            hx-target="#field-{{ field }}" hx-swap="outerHTML">Edit</button>
+  </dd>
+  {% endif %}
+</div>

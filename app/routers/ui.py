@@ -1,14 +1,19 @@
-from fastapi import APIRouter, Depends, Request
+from datetime import date
+
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import ContentType, Genre, Status
+from app.models import ContentType, Genre, Language, Status
+from app.schemas import ItemUpdate
 from app.services import items as items_service
 from app.services import lookups
 
 router = APIRouter(include_in_schema=False)
 templates = Jinja2Templates(directory="app/templates")
+
+EDITABLE_FIELDS = {"status", "rating", "language_id", "source", "completed_date", "notes"}
 
 
 def _search(
@@ -63,3 +68,65 @@ def search_items(
 def item_detail(request: Request, item_id: int, db: Session = Depends(get_db)):
     item = items_service.get_item(db, item_id)
     return templates.TemplateResponse(request, "detail.html", {"item": item})
+
+
+def _field_template(field: str) -> str:
+    return "_field_notes.html" if field == "notes" else "_field_row.html"
+
+
+def _field_context(db: Session, item, field: str, mode: str) -> dict:
+    context = {"item": item, "field": field, "mode": mode}
+    if field == "language_id":
+        context["languages"] = lookups.list_all(db, Language)
+    return context
+
+
+def _parse_field_value(field: str, raw: str):
+    raw = (raw or "").strip()
+    if field == "status":
+        return Status(raw)
+    if field in ("rating", "language_id"):
+        return int(raw) if raw else None
+    if field == "completed_date":
+        return date.fromisoformat(raw) if raw else None
+    return raw or None  # source, notes: blank clears the field
+
+
+@router.get("/ui/items/{item_id}/fields/{field}")
+def view_field(request: Request, item_id: int, field: str, db: Session = Depends(get_db)):
+    if field not in EDITABLE_FIELDS:
+        raise HTTPException(status_code=404, detail="Unknown field")
+    item = items_service.get_item(db, item_id)
+    return templates.TemplateResponse(
+        request, _field_template(field), _field_context(db, item, field, "view")
+    )
+
+
+@router.get("/ui/items/{item_id}/fields/{field}/edit")
+def edit_field(request: Request, item_id: int, field: str, db: Session = Depends(get_db)):
+    if field not in EDITABLE_FIELDS:
+        raise HTTPException(status_code=404, detail="Unknown field")
+    item = items_service.get_item(db, item_id)
+    return templates.TemplateResponse(
+        request, _field_template(field), _field_context(db, item, field, "edit")
+    )
+
+
+@router.post("/ui/items/{item_id}/fields/{field}")
+def save_field(
+    request: Request,
+    item_id: int,
+    field: str,
+    value: str = Form(default=""),
+    db: Session = Depends(get_db),
+):
+    if field not in EDITABLE_FIELDS:
+        raise HTTPException(status_code=404, detail="Unknown field")
+    try:
+        parsed = _parse_field_value(field, value)
+        item = items_service.update_item(db, item_id, ItemUpdate(**{field: parsed}))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+    return templates.TemplateResponse(
+        request, _field_template(field), _field_context(db, item, field, "view")
+    )

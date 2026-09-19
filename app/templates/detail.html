@@ -10,13 +10,11 @@
       <span class="item-type">{{ item.content_type.value }}</span>
       <h2>{{ item.title }}</h2>
       {% if item.creator %}<p class="item-creator">{{ item.creator }}</p>{% endif %}
+      {% if item.genres %}
       <div class="item-meta">
-        <span class="badge badge-{{ item.status.value }}">
-          {{ "Done" if item.status.value == "done" else "To consume" }}
-        </span>
-        {% if item.rating %}<span class="item-rating">&#9733; {{ item.rating }}/10</span>{% endif %}
         {% for g in item.genres %}<span class="tag">{{ g.name }}</span>{% endfor %}
       </div>
+      {% endif %}
     </div>
   </div>
 
@@ -24,9 +22,9 @@
 
   <dl class="fields">
     {% if item.release_year %}<dt>Release year</dt><dd>{{ item.release_year }}</dd>{% endif %}
-    {% if item.language %}<dt>Language</dt><dd>{{ item.language.name }}</dd>{% endif %}
-    {% if item.source %}<dt>Source</dt><dd>{{ item.source }}</dd>{% endif %}
-    {% if item.completed_date %}<dt>Completed</dt><dd>{{ item.completed_date.strftime("%Y-%m-%d") }}</dd>{% endif %}
+    {% for field in ["status", "rating", "language_id", "source", "completed_date"] %}
+      {% include "_field_row.html" %}
+    {% endfor %}
     {% if item.isbn %}<dt>ISBN</dt><dd>{{ item.isbn }}</dd>{% endif %}
     {% if item.imdb_id %}
       <dt>IMDb</dt>
@@ -38,12 +36,7 @@
     {% endif %}
   </dl>
 
-  {% if item.notes %}
-  <section class="detail-section">
-    <h3>Notes</h3>
-    <p>{{ item.notes }}</p>
-  </section>
-  {% endif %}
+  {% include "_field_notes.html" %}
 
   {% if item.platform_links %}
   <section class="detail-section">

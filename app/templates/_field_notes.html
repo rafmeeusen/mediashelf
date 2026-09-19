@@ -1,0 +1,22 @@
+{% set mode = mode | default("view") %}
+<section class="detail-section" id="field-notes">
+  <h3>Notes</h3>
+  {% if mode == "edit" %}
+  <form class="field-form"
+        hx-post="/ui/items/{{ item.id }}/fields/notes"
+        hx-target="#field-notes" hx-swap="outerHTML">
+    <textarea name="value" rows="4">{{ item.notes or "" }}</textarea>
+    <div class="field-actions">
+      <button type="submit" class="btn-save">Save</button>
+      <button type="button" class="btn-cancel"
+              hx-get="/ui/items/{{ item.id }}/fields/notes"
+              hx-target="#field-notes" hx-swap="outerHTML">Cancel</button>
+    </div>
+  </form>
+  {% else %}
+  <p class="notes-text">{{ item.notes or "No notes yet." }}</p>
+  <button type="button" class="edit-btn"
+          hx-get="/ui/items/{{ item.id }}/fields/notes/edit"
+          hx-target="#field-notes" hx-swap="outerHTML">Edit</button>
+  {% endif %}
+</section>

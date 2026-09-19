@@ -245,8 +245,15 @@ input[type="search"] {
 .fields {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.35rem 1rem;
+  gap: 0.5rem 1rem;
   margin: 1rem 0;
+  align-items: center;
+}
+
+/* .field-row wrapper divs (needed so htmx can swap one field at a time)
+   would otherwise break the two-column grid -- make them transparent to it */
+.fields > .field-row {
+  display: contents;
 }
 
 .fields dt {
@@ -257,6 +264,75 @@ input[type="search"] {
 .fields dd {
   margin: 0;
   word-break: break-word;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+}
+
+.field-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.field-form select,
+.field-form input,
+.field-form textarea {
+  font-size: 1rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  min-height: 44px;
+}
+
+.field-form textarea {
+  width: 100%;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.field-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-save,
+.btn-cancel {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.btn-save {
+  border: none;
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.btn-cancel {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.notes-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
 }
 
 .detail-section {
