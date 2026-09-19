@@ -1,13 +1,17 @@
 import httpx
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.integrations import tmdb as tmdb_integration
-from app.models import ContentType, Item, ItemPlatform, Platform, Status
+from app.models import ContentType, Genre, Item, ItemPlatform, Platform, Status
 from app.schemas import ItemCreate, ItemCreateFromSearch, ItemUpdate
 
-_EAGER = (selectinload(Item.language), selectinload(Item.platform_links).selectinload(ItemPlatform.platform))
+_EAGER = (
+    selectinload(Item.language),
+    selectinload(Item.platform_links).selectinload(ItemPlatform.platform),
+    selectinload(Item.genres),
+)
 
 
 def _get_or_404(db: Session, item_id: int) -> Item:
@@ -23,6 +27,7 @@ def list_items(
     db: Session,
     content_type: ContentType | None,
     item_status: Status | None,
+    genre: str | None,
     limit: int,
     offset: int,
 ) -> list[Item]:
@@ -31,6 +36,8 @@ def list_items(
         query = query.where(Item.content_type == content_type)
     if item_status is not None:
         query = query.where(Item.status == item_status)
+    if genre is not None:
+        query = query.where(Item.genres.any(func.lower(Genre.name) == genre.lower()))
     query = query.order_by(Item.id).limit(limit).offset(offset)
     return db.execute(query).scalars().all()
 
@@ -105,5 +112,26 @@ def remove_platform_link(db: Session, item_id: int, platform_id: int) -> Item:
     if link is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Platform link not found")
     db.delete(link)
+    db.commit()
+    return _get_or_404(db, item_id)
+
+
+def add_genre(db: Session, item_id: int, genre_id: int) -> Item:
+    item = _get_or_404(db, item_id)
+    genre = db.get(Genre, genre_id)
+    if genre is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Genre not found")
+    if genre not in item.genres:
+        item.genres.append(genre)
+        db.commit()
+    return _get_or_404(db, item_id)
+
+
+def remove_genre(db: Session, item_id: int, genre_id: int) -> Item:
+    item = _get_or_404(db, item_id)
+    genre = db.get(Genre, genre_id)
+    if genre is None or genre not in item.genres:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Genre link not found")
+    item.genres.remove(genre)
     db.commit()
     return _get_or_404(db, item_id)

@@ -4,6 +4,7 @@ from datetime import date, datetime
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    Column,
     Date,
     DateTime,
     Enum,
@@ -11,6 +12,7 @@ from sqlalchemy import (
     Index,
     Integer,
     String,
+    Table,
     Text,
     func,
 )
@@ -44,6 +46,21 @@ class Platform(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+
+
+class Genre(Base):
+    __tablename__ = "genres"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+
+
+item_genres = Table(
+    "item_genres",
+    Base.metadata,
+    Column("item_id", ForeignKey("items.id", ondelete="CASCADE"), primary_key=True),
+    Column("genre_id", ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True),
+)
 
 
 class Item(Base):
@@ -96,6 +113,7 @@ class Item(Base):
     platform_links: Mapped[list["ItemPlatform"]] = relationship(
         back_populates="item", cascade="all, delete-orphan"
     )
+    genres: Mapped[list["Genre"]] = relationship(secondary=item_genres, order_by="Genre.name")
 
     __table_args__ = (
         Index("ix_items_status", "status"),

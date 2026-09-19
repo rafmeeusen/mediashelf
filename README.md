@@ -20,9 +20,10 @@ No UI yet: browse and try the API via the auto-generated docs at `/docs`.
 ## Setup
 
 1. Copy `.env.example` to `.env` and fill in `DATABASE_URL` (pointing at your
-   Postgres instance) and, optionally, `TMDB_API_KEY` (needed for movie/TV
-   search — get one free at https://www.themoviedb.org/settings/api). Open
-   Library and iTunes need no key.
+   Postgres instance), `PORT` (which port the app listens on), and,
+   optionally, `TMDB_API_KEY` (needed for movie/TV search — get one free at
+   https://www.themoviedb.org/settings/api). Open Library and iTunes need no
+   key.
 2. Build the image:
    ```
    docker compose build
@@ -35,11 +36,16 @@ No UI yet: browse and try the API via the auto-generated docs at `/docs`.
    ```
    docker compose up -d
    ```
-5. Open http://localhost:8000/docs for the interactive API docs.
+5. Open http://localhost:8087/docs (or whichever `PORT` you set) for the
+   interactive API docs — also reachable from other machines on your LAN at
+   `http://<this-machine's-IP>:8087/docs`.
 
 The app runs with `network_mode: host` so the same `DATABASE_URL` (e.g.
 `localhost`) works whether Postgres is reached from inside the container or
-from a native/local run — no separate hostname needed.
+from a native/local run — no separate hostname needed. Because of
+`network_mode: host`, the app binds directly to `PORT` on every network
+interface (LAN included) — put it behind a firewall/VPN if that's not what
+you want.
 
 ## Local development (without Docker)
 
@@ -64,9 +70,15 @@ test session) — no separate test database needed.
 - `PUT/DELETE /items/{id}/platforms/{platform_id}` — record whether an item
   is available on a given platform (e.g. a library or streaming service),
   mainly useful for items you haven't consumed yet.
-- `GET/POST/DELETE /languages`, `GET/POST/DELETE /platforms` — manage the
-  lookup lists referenced by items. Both start empty; add entries as you
-  need them.
+- `POST/DELETE /items/{id}/genres/{genre_id}` — tag an item with a genre
+  (e.g. "Documentary", "Comedy") — orthogonal to `content_type`: a movie can
+  be a Documentary, a Comedy, both, or neither. Mirrors how IMDb separates
+  title type (movie/tvSeries/...) from its genre list.
+- `GET/POST/DELETE /languages`, `GET/POST/DELETE /platforms`,
+  `GET/POST/DELETE /genres` — manage the lookup lists referenced by items.
+  All start empty; add entries as you need them.
+- `GET /items?genre=documentary` — filter items by genre (also filterable
+  by `content_type` and `status`).
 - `GET /search/movies|tv|books|podcasts?q=...` — search external metadata
   providers (TMDB, Open Library, iTunes) to enrich a new item.
 
@@ -74,12 +86,28 @@ Example: create a book, mark it as available at two platforms, then mark it
 read.
 
 ```
-curl -X POST localhost:8000/items -H "Content-Type: application/json" -d \
+curl -X POST localhost:8087/items -H "Content-Type: application/json" -d \
   '{"content_type": "book", "title": "Mislukte staten", "creator": "Noam Chomsky"}'
 
-curl -X PUT localhost:8000/items/1/platforms/1 -d '{"available": true}'
-curl -X PUT localhost:8000/items/1/platforms/2 -d '{"available": false}'
+curl -X PUT localhost:8087/items/1/platforms/1 -d '{"available": true}'
+curl -X PUT localhost:8087/items/1/platforms/2 -d '{"available": false}'
 
-curl -X PATCH localhost:8000/items/1 -d \
+curl -X PATCH localhost:8087/items/1 -d \
   '{"status": "done", "rating": 8, "completed_date": "2026-09-19"}'
 ```
+
+## Bulk importing your backlog
+
+Write your list into `data/import.txt` (see `data/import.example.txt` for
+the field reference — it's a lightweight `key: value` block format, one
+entry per block). Then:
+
+```
+uv run python scripts/import_items.py data/import.txt            # dry run / preview
+uv run python scripts/import_items.py data/import.txt --apply    # actually import
+```
+
+The dry run parses the file, prints a full preview with any warnings, and
+writes nothing — review it before re-running with `--apply`. Referenced
+languages/platforms/genres are created automatically if they don't exist
+yet.

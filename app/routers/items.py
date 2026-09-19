@@ -19,11 +19,12 @@ router = APIRouter(prefix="/items", tags=["items"])
 def list_items(
     content_type: ContentType | None = None,
     status_: Status | None = Query(default=None, alias="status"),
+    genre: str | None = None,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ):
-    rows = items_service.list_items(db, content_type, status_, limit, offset)
+    rows = items_service.list_items(db, content_type, status_, genre, limit, offset)
     return [ItemOut.from_item(row) for row in rows]
 
 
@@ -64,3 +65,13 @@ def set_item_platform(
 @router.delete("/{item_id}/platforms/{platform_id}", response_model=ItemOut)
 def remove_item_platform(item_id: int, platform_id: int, db: Session = Depends(get_db)):
     return ItemOut.from_item(items_service.remove_platform_link(db, item_id, platform_id))
+
+
+@router.post("/{item_id}/genres/{genre_id}", response_model=ItemOut)
+def add_item_genre(item_id: int, genre_id: int, db: Session = Depends(get_db)):
+    return ItemOut.from_item(items_service.add_genre(db, item_id, genre_id))
+
+
+@router.delete("/{item_id}/genres/{genre_id}", response_model=ItemOut)
+def remove_item_genre(item_id: int, genre_id: int, db: Session = Depends(get_db)):
+    return ItemOut.from_item(items_service.remove_genre(db, item_id, genre_id))

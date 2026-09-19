@@ -5,7 +5,9 @@ class Settings(BaseSettings):
     database_url: str
     tmdb_api_key: str | None = None
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # extra="ignore": .env may carry deployment-only settings (e.g. PORT, read
+    # by the Docker CMD's shell substitution, never by this app's Python code)
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 settings = Settings()

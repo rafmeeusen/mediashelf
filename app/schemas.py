@@ -27,6 +27,17 @@ class PlatformOut(BaseModel):
     name: str
 
 
+class GenreCreate(BaseModel):
+    name: str
+
+
+class GenreOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
 class ItemPlatformIn(BaseModel):
     available: bool
 
@@ -121,6 +132,7 @@ class ItemOut(BaseModel):
     created_at: datetime
     updated_at: datetime
     platforms: list[ItemPlatformOut]
+    genres: list[GenreOut]
 
     @classmethod
     def from_item(cls, item) -> "ItemOut":
@@ -145,6 +157,7 @@ class ItemOut(BaseModel):
             created_at=item.created_at,
             updated_at=item.updated_at,
             platforms=[ItemPlatformOut.from_link(link) for link in item.platform_links],
+            genres=item.genres,
         )
 
 
