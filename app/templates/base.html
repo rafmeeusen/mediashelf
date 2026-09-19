@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/htmx.min.js" defer></script>
 </head>
-<body>
+<body hx-boost="true">
   <header class="topbar">
-    <h1>MediaShelf</h1>
+    <h1><a href="/">MediaShelf</a></h1>
   </header>
   <main class="container">
     {% block content %}{% endblock %}

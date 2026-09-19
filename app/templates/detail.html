@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} · MediaShelf{% endblock %}
+{% block content %}
+<a href="/" class="back-link">&larr; Back to shelf</a>
+
+<article class="detail">
+  <div class="detail-header">
+    {% if item.cover_url %}<img class="cover" src="{{ item.cover_url }}" alt="">{% endif %}
+    <div>
+      <span class="item-type">{{ item.content_type.value }}</span>
+      <h2>{{ item.title }}</h2>
+      {% if item.creator %}<p class="item-creator">{{ item.creator }}</p>{% endif %}
+      <div class="item-meta">
+        <span class="badge badge-{{ item.status.value }}">
+          {{ "Done" if item.status.value == "done" else "To consume" }}
+        </span>
+        {% if item.rating %}<span class="item-rating">&#9733; {{ item.rating }}/10</span>{% endif %}
+        {% for g in item.genres %}<span class="tag">{{ g.name }}</span>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if item.description %}<p class="description">{{ item.description }}</p>{% endif %}
+
+  <dl class="fields">
+    {% if item.release_year %}<dt>Release year</dt><dd>{{ item.release_year }}</dd>{% endif %}
+    {% if item.language %}<dt>Language</dt><dd>{{ item.language.name }}</dd>{% endif %}
+    {% if item.source %}<dt>Source</dt><dd>{{ item.source }}</dd>{% endif %}
+    {% if item.completed_date %}<dt>Completed</dt><dd>{{ item.completed_date.strftime("%Y-%m-%d") }}</dd>{% endif %}
+    {% if item.isbn %}<dt>ISBN</dt><dd>{{ item.isbn }}</dd>{% endif %}
+    {% if item.imdb_id %}
+      <dt>IMDb</dt>
+      <dd><a href="https://www.imdb.com/title/{{ item.imdb_id }}/" target="_blank" rel="noopener">{{ item.imdb_id }}</a></dd>
+    {% endif %}
+    {% if item.feed_url %}
+      <dt>Feed</dt>
+      <dd><a href="{{ item.feed_url }}" target="_blank" rel="noopener">{{ item.feed_url }}</a></dd>
+    {% endif %}
+  </dl>
+
+  {% if item.notes %}
+  <section class="detail-section">
+    <h3>Notes</h3>
+    <p>{{ item.notes }}</p>
+  </section>
+  {% endif %}
+
+  {% if item.platform_links %}
+  <section class="detail-section">
+    <h3>Platforms</h3>
+    <ul class="platform-list">
+      {% for link in item.platform_links %}
+      <li>
+        <span>{{ link.platform.name }}</span>
+        <span class="badge {{ 'badge-done' if link.available else 'badge-unavailable' }}">
+          {{ "available" if link.available else "not available" }}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <p class="timestamps">
+    Added {{ item.created_at.strftime("%Y-%m-%d") }} &middot;
+    updated {{ item.updated_at.strftime("%Y-%m-%d") }}
+  </p>
+</article>
+{% endblock %}

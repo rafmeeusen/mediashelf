@@ -1,19 +1,21 @@
 <p class="result-count">{{ count }} result{{ "" if count == 1 else "s" }}</p>
 <ul class="item-list">
   {% for item in items %}
-  <li class="item-card">
-    <div class="item-main">
-      <span class="item-type">{{ item.content_type.value }}</span>
-      <span class="item-title">{{ item.title }}</span>
-      {% if item.creator %}<span class="item-creator">{{ item.creator }}</span>{% endif %}
-    </div>
-    <div class="item-meta">
-      <span class="badge badge-{{ item.status.value }}">
-        {{ "Done" if item.status.value == "done" else "To consume" }}
-      </span>
-      {% if item.rating %}<span class="item-rating">&#9733; {{ item.rating }}/10</span>{% endif %}
-      {% for g in item.genres %}<span class="tag">{{ g.name }}</span>{% endfor %}
-    </div>
+  <li>
+    <a class="item-card" href="/ui/items/{{ item.id }}">
+      <div class="item-main">
+        <span class="item-type">{{ item.content_type.value }}</span>
+        <span class="item-title">{{ item.title }}</span>
+        {% if item.creator %}<span class="item-creator">{{ item.creator }}</span>{% endif %}
+      </div>
+      <div class="item-meta">
+        <span class="badge badge-{{ item.status.value }}">
+          {{ "Done" if item.status.value == "done" else "To consume" }}
+        </span>
+        {% if item.rating %}<span class="item-rating">&#9733; {{ item.rating }}/10</span>{% endif %}
+        {% for g in item.genres %}<span class="tag">{{ g.name }}</span>{% endfor %}
+      </div>
+    </a>
   </li>
   {% else %}
   <li class="empty">No items match.</li>

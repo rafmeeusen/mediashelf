@@ -57,3 +57,9 @@ def search_items(
 ):
     items, count = _search(db, q, content_type, status, genre)
     return templates.TemplateResponse(request, "_item_list.html", {"items": items, "count": count})
+
+
+@router.get("/ui/items/{item_id}")
+def item_detail(request: Request, item_id: int, db: Session = Depends(get_db)):
+    item = items_service.get_item(db, item_id)
+    return templates.TemplateResponse(request, "detail.html", {"item": item})
