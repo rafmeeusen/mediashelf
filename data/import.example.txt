@@ -1,0 +1,51 @@
+# MediaShelf import file
+#
+# One entry per block, separated by a blank line. Each line is "key: value".
+# Lines starting with # are comments and are ignored.
+#
+# Fields:
+#   title          required
+#   creator        optional  - author/director/host
+#   type           required  - movie | book | tv | podcast
+#                             (aliases OK: film, boek, serie all work)
+#   status         optional  - to_consume (default) | done
+#                             (aliases OK: gelezen, gezien -> done;
+#                              nog te lezen, te zien -> to_consume)
+#   language       optional  - e.g. "engels", "nederlands" (free text,
+#                              matched/created in the languages list)
+#   rating         optional  - 1-10
+#   notes          optional  - your review/reaction, free text
+#   source         optional  - how you found out about it, free text
+#   completed_date optional  - dd/mm/yyyy (only meaningful for status: done)
+#   platform       optional, repeatable - "<name>" alone means available,
+#                              "<name> = nee" means checked but not available
+#                              (matched/created in the platforms list)
+#   genre          optional, repeatable - free-form tag, e.g. "Documentary",
+#                              "Comedy" (matched/created in the genres list).
+#                              Orthogonal to type: a movie can be tagged
+#                              Documentary, Comedy, Fiction, etc. - just like
+#                              IMDb separates title type from genre.
+#   imdb           optional  - an IMDb URL or bare id (tt1234567); the id is
+#                              extracted automatically
+#   isbn           optional  - for books
+#   feed_url       optional  - for podcasts (RSS feed URL)
+#
+# Everything except title/type is optional. Write in Dutch or English freely
+# in the free-text fields (notes/source/creator/title) - only the field
+# names and the type/status/platform-availability keywords need to match
+# the vocabulary above.
+
+title: The Quiet Girl
+type: movie
+status: done
+completed_date: 12/4/2024
+notes: wou ik in cinema gaan zien, maar niet van gek
+platform: Picl
+
+title: Demon Copperhead
+creator: Barbara Kingsolver
+type: book
+language: engels
+status: to_consume
+source: iets gelezen in De Standaard, rond thema oxycodon
+notes: Verhaal over een jongen die opgroeit te midden van armoede en drugsverslaving.

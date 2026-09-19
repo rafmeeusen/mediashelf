@@ -1,12 +1,9 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
 
 from app.config import settings
-from app.db import Base
+from app.db import Base, engine
 from app import models  # noqa: F401  (ensures models are registered on Base.metadata)
 
 # this is the Alembic Config object, which provides
@@ -55,19 +52,15 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-
+    Reuses app.db.engine directly (rather than building a separate one from
+    alembic.ini) so migrations always connect with the same schema
+    (search_path) as the application itself.
     """
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
-
-    with connectable.connect() as connection:
+    with engine.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            version_table_schema=settings.db_schema,
         )
 
         with context.begin_transaction():

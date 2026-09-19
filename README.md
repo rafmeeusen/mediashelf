@@ -20,7 +20,8 @@ No UI yet: browse and try the API via the auto-generated docs at `/docs`.
 ## Setup
 
 1. Copy `.env.example` to `.env` and fill in `DATABASE_URL` (pointing at your
-   Postgres instance), `PORT` (which port the app listens on), and,
+   Postgres instance), `DB_SCHEMA` (the app lives in its own schema, not
+   `public` — see below), `PORT` (which port the app listens on), and,
    optionally, `TMDB_API_KEY` (needed for movie/TV search — get one free at
    https://www.themoviedb.org/settings/api). Open Library and iTunes need no
    key.
@@ -46,6 +47,22 @@ from a native/local run — no separate hostname needed. Because of
 `network_mode: host`, the app binds directly to `PORT` on every network
 interface (LAN included) — put it behind a firewall/VPN if that's not what
 you want.
+
+### Why a dedicated schema
+
+All of MediaShelf's tables live in the `DB_SCHEMA` schema (default
+`mediashelf`) inside your database, not in Postgres's default `public`
+schema — so it stays cleanly separated from anything else you keep in that
+database, and can be dumped/restored independently (see Backups below). The
+app's engine sets the connection's `search_path` to this schema
+(`app/db.py`), and Alembic (`migrations/env.py`) reuses that same engine so
+migrations always target the same place the app reads from. Nothing on the
+model layer hardcodes a schema name — moving to a different `DB_SCHEMA`
+later only means updating `.env` and physically moving the tables (see
+`scripts/move_to_mediashelf_schema.sql` for the one-time move this project
+itself went through, using Postgres's `ALTER ... SET SCHEMA`, which
+relocates existing tables/data/sequences/types in place — no dump/restore
+needed for that).
 
 ## Local development (without Docker)
 
@@ -111,3 +128,60 @@ The dry run parses the file, prints a full preview with any warnings, and
 writes nothing — review it before re-running with `--apply`. Referenced
 languages/platforms/genres are created automatically if they don't exist
 yet.
+
+## Backups
+
+`scripts/backup_db.sh` dumps only the `DB_SCHEMA` schema (custom `pg_dump`
+format — compressed, supports selective restore) via a disposable
+`postgres:16-alpine` container, so no Postgres client tools need to be
+installed on the host, and nothing else that might live in the same
+database gets swept in. It reads `DATABASE_URL`/`DB_SCHEMA` from `.env`.
+
+```
+scripts/backup_db.sh
+```
+
+- Writes to `~/backups/mediashelf/<dbname>_<timestamp>.dump` (override with
+  `MEDIASHELF_BACKUP_DIR`).
+- Prunes dumps older than 30 days automatically (override with
+  `MEDIASHELF_BACKUP_RETENTION_DAYS`).
+- Scheduled via cron, daily at 3am:
+  ```
+  0 3 * * * /home/raf/repo/mediashelf/scripts/backup_db.sh >> /home/raf/backups/mediashelf/backup.log 2>&1
+  ```
+  Check/edit with `crontab -e`; view history in `~/backups/mediashelf/backup.log`.
+
+These backups only live on this machine — copy them elsewhere (another
+disk, a NAS, cloud storage) for real disaster recovery; a single-host copy
+doesn't protect against disk/host failure.
+
+**Restore** (into an existing, empty-or-overwritable database):
+
+```
+docker run --rm -v ~/backups/mediashelf:/backup --network host \
+  -e PGPASSWORD=<password> postgres:16-alpine \
+  pg_restore -h localhost -p 5432 -U media_user -d media_db --clean --if-exists \
+  /backup/<dump-file>.dump
+```
+
+`--clean --if-exists` drops existing objects before recreating them, so this
+is safe to run against the live database to roll back to a backup.
+
+### Testing a restore without touching production
+
+`scripts/restore_test.sh` proves a backup is actually restorable, without a
+second database (`media_user` has no `CREATEDB` privilege — but schema-level
+`CREATE` already works, the same trick the test suite uses). It restores the
+most recent backup into a throwaway `mediashelf_restore_test` schema in the
+same database, verifies every table's row count matches the live schema
+exactly, then drops the test schema again:
+
+```
+scripts/restore_test.sh              # uses the newest backup, cleans up after itself
+scripts/restore_test.sh --keep       # leaves mediashelf_restore_test in place to inspect manually
+scripts/restore_test.sh path/to/some-older-backup.dump
+```
+
+A `pg_dump` archive always bakes in the exact schema name it came from —
+there's no `pg_restore` flag to remap it — so this works by converting the
+dump to plain SQL and substituting the schema name before applying it.
