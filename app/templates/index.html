@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="filters"
+      hx-get="/ui/items"
+      hx-target="#item-list"
+      hx-trigger="input changed delay:300ms, change delay:100ms"
+      hx-sync="this:replace"
+      hx-indicator="#spinner">
+  <input type="search" name="q" placeholder="Search title or creator..." autocomplete="off" aria-label="Search">
+  <div class="filter-row">
+    <select name="content_type" aria-label="Type">
+      <option value="">All types</option>
+      <option value="movie">Movies</option>
+      <option value="book">Books</option>
+      <option value="tv">TV</option>
+      <option value="podcast">Podcasts</option>
+    </select>
+    <select name="status" aria-label="Status">
+      <option value="">Any status</option>
+      <option value="to_consume">To consume</option>
+      <option value="done">Done</option>
+    </select>
+    <select name="genre" aria-label="Genre">
+      <option value="">Any genre</option>
+      {% for g in genres %}
+      <option value="{{ g.name }}">{{ g.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <span id="spinner" class="spinner htmx-indicator">Searching&hellip;</span>
+</form>
+<div id="item-list">
+  {% include "_item_list.html" %}
+</div>
+{% endblock %}

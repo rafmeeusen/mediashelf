@@ -20,11 +20,12 @@ def list_items(
     content_type: ContentType | None = None,
     status_: Status | None = Query(default=None, alias="status"),
     genre: str | None = None,
+    q: str | None = None,
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ):
-    rows = items_service.list_items(db, content_type, status_, genre, limit, offset)
+    rows = items_service.list_items(db, content_type, status_, genre, limit, offset, q)
     return [ItemOut.from_item(row) for row in rows]
 
 

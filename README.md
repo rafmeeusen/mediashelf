@@ -2,11 +2,13 @@
 
 Books, films, series all on one shelf.
 
-A self-hosted, single-user API for tracking movies, books, TV series, and
+A self-hosted, single-user app for tracking movies, books, TV series, and
 podcasts you still want to consume or have already consumed — with ratings,
 notes, and metadata enrichment from TMDB, Open Library, and iTunes.
 
-No UI yet: browse and try the API via the auto-generated docs at `/docs`.
+Open `/` for the web UI (live search + filters, mobile and desktop
+friendly), or browse the JSON API directly via the auto-generated docs at
+`/docs`.
 
 ## Prerequisites
 
@@ -76,6 +78,25 @@ uv run pytest
 Tests run against the same database as `DATABASE_URL`, but inside an
 isolated `test` Postgres schema (dropped and recreated automatically each
 test session) — no separate test database needed.
+
+## Web UI
+
+`/` is a server-rendered page (`app/templates/`) using [htmx](https://htmx.org)
+for interactivity, vendored locally at `app/static/htmx.min.js` (no CDN
+dependency, no build step, no npm). The search box and type/status/genre
+filters live-update the results via `GET /ui/items`, which renders just the
+`app/templates/_item_list.html` fragment and htmx swaps it into the page —
+debounced 300ms while typing, faster on dropdown changes (see the
+`hx-trigger` on the `<form>` in `app/templates/index.html`).
+
+This pattern is what future pieces (add a new item, edit a field in place)
+should follow: a small route in `app/routers/ui.py` that accepts form input,
+calls the existing `app/services/` functions (same ones the JSON API uses),
+and returns a small HTML fragment to swap in — no new frontend framework or
+duplicated business logic needed as the UI grows.
+
+Styling is a single plain stylesheet (`app/static/style.css`), mobile-first
+with a breakpoint at 640px for wider screens — no CSS framework.
 
 ## API overview
 

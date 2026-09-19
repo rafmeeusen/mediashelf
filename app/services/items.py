@@ -23,6 +23,27 @@ def _get_or_404(db: Session, item_id: int) -> Item:
     return item
 
 
+def _filtered_query(
+    content_type: ContentType | None,
+    item_status: Status | None,
+    genre: str | None,
+    q: str | None,
+):
+    query = select(Item)
+    if content_type is not None:
+        query = query.where(Item.content_type == content_type)
+    if item_status is not None:
+        query = query.where(Item.status == item_status)
+    if genre is not None:
+        query = query.where(Item.genres.any(func.lower(Genre.name) == genre.lower()))
+    if q:
+        like = f"%{q.lower()}%"
+        query = query.where(
+            func.lower(Item.title).like(like) | func.lower(func.coalesce(Item.creator, "")).like(like)
+        )
+    return query
+
+
 def list_items(
     db: Session,
     content_type: ContentType | None,
@@ -30,16 +51,22 @@ def list_items(
     genre: str | None,
     limit: int,
     offset: int,
+    q: str | None = None,
 ) -> list[Item]:
-    query = select(Item).options(*_EAGER)
-    if content_type is not None:
-        query = query.where(Item.content_type == content_type)
-    if item_status is not None:
-        query = query.where(Item.status == item_status)
-    if genre is not None:
-        query = query.where(Item.genres.any(func.lower(Genre.name) == genre.lower()))
-    query = query.order_by(Item.id).limit(limit).offset(offset)
+    query = _filtered_query(content_type, item_status, genre, q)
+    query = query.options(*_EAGER).order_by(Item.id).limit(limit).offset(offset)
     return db.execute(query).scalars().all()
+
+
+def count_items(
+    db: Session,
+    content_type: ContentType | None,
+    item_status: Status | None,
+    genre: str | None,
+    q: str | None = None,
+) -> int:
+    query = _filtered_query(content_type, item_status, genre, q)
+    return db.execute(select(func.count()).select_from(query.subquery())).scalar_one()
 
 
 def get_item(db: Session, item_id: int) -> Item:
