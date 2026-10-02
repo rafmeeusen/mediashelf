@@ -1,17 +1,10 @@
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 
-from app.integrations.itunes import ITunesPodcastProvider
-from app.integrations.openlibrary import OpenLibraryProvider
-from app.integrations.tmdb import TMDBMovieProvider, TMDBTVProvider
+from app.integrations.registry import PROVIDERS
 from app.schemas import SearchResult
 
 router = APIRouter(prefix="/search", tags=["search"])
-
-_movie_provider = TMDBMovieProvider()
-_tv_provider = TMDBTVProvider()
-_book_provider = OpenLibraryProvider()
-_podcast_provider = ITunesPodcastProvider()
 
 
 def _run(provider, q: str) -> list[SearchResult]:
@@ -23,19 +16,19 @@ def _run(provider, q: str) -> list[SearchResult]:
 
 @router.get("/movies", response_model=list[SearchResult])
 def search_movies(q: str = Query(min_length=1)):
-    return _run(_movie_provider, q)
+    return _run(PROVIDERS["movie"], q)
 
 
 @router.get("/tv", response_model=list[SearchResult])
 def search_tv(q: str = Query(min_length=1)):
-    return _run(_tv_provider, q)
+    return _run(PROVIDERS["tv"], q)
 
 
 @router.get("/books", response_model=list[SearchResult])
 def search_books(q: str = Query(min_length=1)):
-    return _run(_book_provider, q)
+    return _run(PROVIDERS["book"], q)
 
 
 @router.get("/podcasts", response_model=list[SearchResult])
 def search_podcasts(q: str = Query(min_length=1)):
-    return _run(_podcast_provider, q)
+    return _run(PROVIDERS["podcast"], q)

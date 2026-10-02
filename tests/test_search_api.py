@@ -3,7 +3,7 @@ from httpx import Response
 
 
 @respx.mock
-def test_search_books_proxies_open_library(client):
+def test_search_books_combines_open_library_and_google_books(client):
     respx.get("https://openlibrary.org/search.json").mock(
         return_value=Response(
             200,
@@ -20,12 +20,41 @@ def test_search_books_proxies_open_library(client):
             },
         )
     )
+    respx.get("https://www.googleapis.com/books/v1/volumes").mock(
+        return_value=Response(
+            200,
+            json={
+                "items": [
+                    {
+                        "id": "gb1",
+                        "volumeInfo": {
+                            "title": "De officier en de spion",
+                            "authors": ["Robert Harris"],
+                            "language": "nl",
+                        },
+                    }
+                ]
+            },
+        )
+    )
 
-    resp = client.get("/search/books", params={"q": "Demon Copperhead"})
+    resp = client.get("/search/books", params={"q": "query"})
     assert resp.status_code == 200
-    body = resp.json()
-    assert body[0]["title"] == "Demon Copperhead"
-    assert body[0]["isbn"] == "9780571376490"
+    titles = [item["title"] for item in resp.json()]
+    assert "Demon Copperhead" in titles
+    assert "De officier en de spion" in titles
+
+
+@respx.mock
+def test_search_books_one_source_failing_still_returns_the_other(client):
+    respx.get("https://openlibrary.org/search.json").mock(return_value=Response(500))
+    respx.get("https://www.googleapis.com/books/v1/volumes").mock(
+        return_value=Response(200, json={"items": [{"id": "gb1", "volumeInfo": {"title": "Still found"}}]})
+    )
+
+    resp = client.get("/search/books", params={"q": "query"})
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()] == ["Still found"]
 
 
 @respx.mock

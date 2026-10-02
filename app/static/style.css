@@ -371,3 +371,136 @@ input[type="search"] {
 @media (min-width: 640px) {
   .detail-header { flex-wrap: nowrap; }
 }
+
+/* New item page */
+
+.new-item-link {
+  display: inline-block;
+  text-decoration: none;
+  margin-bottom: 1rem;
+}
+
+.new-item-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.new-item-search select {
+  flex: 0 0 auto;
+}
+
+.new-item-search input[type="search"] {
+  flex: 1 1 12rem;
+}
+
+.error {
+  color: var(--consume-text);
+}
+
+.search-results {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.search-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.6rem;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.search-result-card:hover,
+.search-result-card:focus-visible {
+  border-color: var(--accent);
+}
+
+.search-result-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  background: var(--bg);
+}
+
+.src-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.src-creator,
+.src-year {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.new-item-confirm,
+.new-item-manual {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.new-item-confirm label,
+.new-item-manual label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.new-item-confirm input,
+.new-item-confirm select,
+.new-item-manual input,
+.new-item-manual select {
+  font-size: 1rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 44px;
+}
+
+.new-item-confirm .cover {
+  width: 96px;
+  height: 144px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.new-item-confirm .hint {
+  margin: -0.4rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.manual-entry {
+  margin-bottom: 1rem;
+}
+
+.manual-entry summary {
+  cursor: pointer;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}

@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     database_url: str
     db_schema: str = "mediashelf"
     tmdb_api_key: str | None = None
+    google_books_api_key: str | None = None
 
     # extra="ignore": .env may carry deployment-only settings (e.g. PORT, read
     # by the Docker CMD's shell substitution, never by this app's Python code)

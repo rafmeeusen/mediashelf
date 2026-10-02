@@ -1,0 +1,29 @@
+{% if error %}
+<p class="error">{{ error }}</p>
+{% elif query and not results %}
+<p class="empty">Geen resultaten. Probeer een andere zoekterm of voeg handmatig toe.</p>
+{% elif results %}
+<ul class="search-results">
+  {% for result in results %}
+  <li>
+    <form hx-get="/ui/items/new/confirm" hx-target="#new-item-form-area" hx-swap="innerHTML show:#new-item-form-area:top">
+      <input type="hidden" name="content_type" value="{{ content_type }}">
+      <input type="hidden" name="title" value="{{ result.title }}">
+      <input type="hidden" name="creator" value="{{ result.creator or '' }}">
+      <input type="hidden" name="release_year" value="{{ result.release_year or '' }}">
+      <input type="hidden" name="description" value="{{ result.description or '' }}">
+      <input type="hidden" name="cover_url" value="{{ result.cover_url or '' }}">
+      <input type="hidden" name="isbn" value="{{ result.isbn or '' }}">
+      <input type="hidden" name="feed_url" value="{{ result.feed_url or '' }}">
+      <input type="hidden" name="external_metadata_json" value='{{ result.external_metadata_json }}'>
+      <button type="submit" class="search-result-card">
+        {% if result.cover_url %}<img src="{{ result.cover_url }}" alt="">{% endif %}
+        <span class="src-title">{{ result.title }}</span>
+        {% if result.creator %}<span class="src-creator">{{ result.creator }}</span>{% endif %}
+        {% if result.release_year %}<span class="src-year">{{ result.release_year }}</span>{% endif %}
+      </button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}

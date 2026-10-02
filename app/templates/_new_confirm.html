@@ -1,0 +1,36 @@
+<form method="post" action="/ui/items/new/from-search" class="new-item-confirm">
+  <input type="hidden" name="content_type" value="{{ content_type }}">
+  <input type="hidden" name="creator" value="{{ creator or '' }}">
+  <input type="hidden" name="description" value="{{ description or '' }}">
+  <input type="hidden" name="cover_url" value="{{ cover_url or '' }}">
+  <input type="hidden" name="isbn" value="{{ isbn or '' }}">
+  <input type="hidden" name="feed_url" value="{{ feed_url or '' }}">
+  <input type="hidden" name="external_metadata_json" value='{{ external_metadata_json }}'>
+
+  {% if cover_url %}<img class="cover" src="{{ cover_url }}" alt="">{% endif %}
+
+  <label>Titel
+    <input type="text" name="title" value="{{ title }}" required>
+  </label>
+
+  {% if creator %}<p class="hint">{{ creator }}</p>{% endif %}
+
+  <label>Jaar
+    <input type="number" name="release_year" value="{{ release_year or '' }}" min="1900" max="2100">
+  </label>
+
+  <label>Taal
+    <select name="language_id">
+      <option value="">&mdash;</option>
+      {% for lang in languages %}
+      <option value="{{ lang.id }}">{{ lang.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>Bron (optioneel)
+    <input type="text" name="source" placeholder="bv. tip van Jan">
+  </label>
+
+  <button type="submit" class="btn-save">Toevoegen aan kast</button>
+</form>

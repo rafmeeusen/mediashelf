@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Nieuw item · MediaShelf{% endblock %}
+{% block content %}
+<a href="/" class="back-link">&larr; Terug naar overzicht</a>
+<h2>Nieuw item toevoegen</h2>
+
+<form class="new-item-search"
+      hx-get="/ui/items/new/search"
+      hx-target="#new-item-results"
+      hx-trigger="input changed delay:300ms, change delay:100ms"
+      hx-sync="this:replace"
+      hx-indicator="#new-search-spinner">
+  <select name="content_type" aria-label="Type">
+    <option value="movie">Film</option>
+    <option value="tv">Serie</option>
+    <option value="book">Boek</option>
+    <option value="podcast">Podcast</option>
+  </select>
+  <input type="search" name="q" placeholder="Zoek op titel..." autocomplete="off" aria-label="Zoeken">
+  <span id="new-search-spinner" class="spinner htmx-indicator">Bezig met zoeken&hellip;</span>
+</form>
+
+<div id="new-item-form-area"></div>
+
+<div id="new-item-results"></div>
+
+<details class="manual-entry">
+  <summary>Handmatig toevoegen (zonder zoeken)</summary>
+  <form method="post" action="/ui/items/new/manual" class="new-item-manual">
+    <label>Type
+      <select name="content_type" required>
+        <option value="movie">Film</option>
+        <option value="book">Boek</option>
+        <option value="tv">Serie</option>
+        <option value="podcast">Podcast</option>
+      </select>
+    </label>
+    <label>Titel
+      <input type="text" name="title" required>
+    </label>
+    <label>Maker
+      <input type="text" name="creator">
+    </label>
+    <label>Taal
+      <select name="language_id">
+        <option value="">&mdash;</option>
+        {% for lang in languages %}
+        <option value="{{ lang.id }}">{{ lang.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit" class="btn-save">Toevoegen aan kast</button>
+  </form>
+</details>
+{% endblock %}
